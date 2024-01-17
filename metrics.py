@@ -9,7 +9,6 @@ def create_metrics():
     Create Prometheus Gauges for various fields in the blob data.
     """
     metrics = {
-        'blob_index': Gauge('blob_index', 'Index of the blob'),
         'reference_block_number': Gauge('reference_block_number', 'Reference block number'),
         'batch_id': Gauge('batch_id', 'Batch ID'),
         'confirmation_block_number': Gauge('confirmation_block_number', 'Confirmation block number'),
@@ -18,7 +17,7 @@ def create_metrics():
     }
     return metrics
 
-def update_metrics(metrics, data):
+def update_metrics(metrics, data, last_timestamp):
     """
     Update the Prometheus metrics with the latest data from the API.
 
@@ -29,10 +28,13 @@ def update_metrics(metrics, data):
     # Get data and sort it by requested_at
     sorted_data = sorted(data.get('result', {}).get('data', {}).get('json', {}).get('data', []), key=lambda k: k['requested_at'])
     for blob in sorted_data:
-        metrics['blob_index'].set(blob.get('blob_index', 0))
+        if blob['requested_at'] <= last_timestamp:
+            # If the blob has already been processed, skip it
+            continue
         metrics['reference_block_number'].set(blob.get('reference_block_number', 0))
         metrics['batch_id'].set(blob.get('batch_id', 0))
         metrics['confirmation_block_number'].set(blob.get('confirmation_block_number', 0))
         metrics['requested_at'].set(blob.get('requested_at', 0))
         # Update additional metrics here
+    return sorted_data[-1]['requested_at']
 
