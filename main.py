@@ -8,7 +8,7 @@ import os
 API_URL = os.environ.get('API_URL', "https://blobs-goerli.eigenda.xyz/api/trpc/blobs.getBlobs")
 
 # How often to fetch new data and update metrics (in seconds)
-FETCH_INTERVAL = os.environ.get('FETCH_INTERVAL', 60)
+FETCH_INTERVAL = int(os.environ.get('FETCH_INTERVAL', 60))
 
 def main():
     """
