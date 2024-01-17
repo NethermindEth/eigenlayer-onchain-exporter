@@ -13,13 +13,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Make port 9600 available to the world outside this container
 EXPOSE 9600 
 
-# Define arguments for build-time configuration
-ARG BUILD_FETCH_INTERVAL=60
-ARG BUILD_API_URL=https://blobs-goerli.eigenda.xyz/api/trpc/blobs.getBlobs
-
 # Define environment variable
-ENV FETCH_INTERVAL=${BUILD_FETCH_INTERVAL}
-ENV API_URL=${BUILD_API_URL}
+ENV FETCH_INTERVAL=60
+ENV API_URL=https://blobs-goerli.eigenda.xyz/api/trpc/blobs.getBlobs
 
 # Run main.py when the container launches
 CMD ["python", "./main.py"]
