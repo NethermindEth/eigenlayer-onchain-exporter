@@ -21,13 +21,15 @@ def main():
     # Create metrics
     metrics = create_metrics()
 
+    last_timestamp = 0
+
     while True:
         try:
             # Fetch new data from the API
             data = fetch_data_from_api(API_URL)
             
             # Update the metrics with the new data
-            update_metrics(metrics, data)
+            last_timestamp = update_metrics(metrics, data, last_timestamp)
 
             print("Metrics updated.")
         except Exception as e:
