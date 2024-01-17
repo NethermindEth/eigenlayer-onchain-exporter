@@ -26,12 +26,13 @@ def update_metrics(metrics, data):
     metrics (dict): The dictionary of Prometheus Gauges.
     data (dict): The data fetched from the API.
     """
-    current_time = time.time()
-    for blob in data.get('result', {}).get('data', {}).get('json', {}).get('data', []):
+    # Get data and sort it by requested_at
+    sorted_data = sorted(data.get('result', {}).get('data', {}).get('json', {}).get('data', []), key=lambda k: k['requested_at'])
+    for blob in sorted_data:
         metrics['blob_index'].set(blob.get('blob_index', 0))
         metrics['reference_block_number'].set(blob.get('reference_block_number', 0))
         metrics['batch_id'].set(blob.get('batch_id', 0))
         metrics['confirmation_block_number'].set(blob.get('confirmation_block_number', 0))
-        metrics['requested_at'].set(blob.get('requested_at', 0)
+        metrics['requested_at'].set(blob.get('requested_at', 0))
         # Update additional metrics here
 
