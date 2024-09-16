@@ -9,7 +9,7 @@ on:
       image-name:
         description: Image name
         required: true
-        default: eigenda-blob-scraper
+        default: eigenlayer-onchain-exporter
       tag:
         description: Image tag
         required: true
@@ -17,14 +17,6 @@ on:
         description: Dockerfile
         required: true
         default: Dockerfile
-      fetch-interval:
-        description: Fetch interval in seconds, default 1 minute
-        required: false
-        default: 60
-      api-url:
-        description: Endpoint to get the blob json data from
-        required: false
-        default: https://blobs-goerli.eigenda.xyz/api/trpc/blobs.getBlobs
 
 jobs:
   publish-docker:

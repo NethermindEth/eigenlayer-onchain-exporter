@@ -1,13 +1,11 @@
-version: '3'
-
 services:
-  scraper:
+  onchain-exporter:
     build: .
-    ports:
-      - "9600:9600"
+    expose:
+      - "9090"
     restart: unless-stopped
-    environment:
-      - FETCH_INTERVAL=60
+    volumes:
+     - ./config.yml:/root/config.yml
 
   prometheus:
     image: prom/prometheus
@@ -16,5 +14,5 @@ services:
     ports:
       - "9090:9090"
     depends_on:
-      - scraper
+      - onchain-exporter
     restart: unless-stopped
