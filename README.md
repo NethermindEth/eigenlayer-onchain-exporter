@@ -83,7 +83,7 @@ Run the `eoe --help` command to see all the command options.
 
 ```shell
 $ ./bin/eoe --help
-EigenLayer On-chain Exporter (eoe) exposes Prometheus metrics about EigenLayer's Node Operator.
+EigenLayer On-chain Exporter (eoe) exposes Prometheus metrics about AVS protocols and EigenLayer's Node Operator.
 
 Usage:
   eoe [command]
