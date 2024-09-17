@@ -1,6 +1,6 @@
 # EigenLayer AVS OnChain Exporter
 
-EigenLayer AVS OnChain Exporter (EOE) is a tool designed to export on-chain data from various Active Validator Set (AVS) services within the EigenLayer ecosystem as Prometheus metrics.
+EigenLayer AVS OnChain Exporter (EOE) is a tool designed to export on-chain data from various Actively Validator Set (AVS) services within the EigenLayer ecosystem as Prometheus metrics.
 
 ## Features
 
