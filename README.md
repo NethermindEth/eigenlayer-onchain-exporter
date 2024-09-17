@@ -17,6 +17,13 @@ For EigenDA, Holeksy and Mainnet are supported and exposes the following metrics
 
 > Due this exporter could be tracking operators that are already running before the exporter is deployed, the `eoe_eigenda_onchain_quorum_status` initial value could be configured by setting the `operators[i].eigenDAConfig.quorums[j]` to `true` if the operator is in quorum at exporter start.
 
+##### Labels
+
+- `network`: The network name (e.g., `holesky`, `mainnet`).
+- `operator`: The operator name (e.g., `nethermind`, `twinstake`). The operator name corresponds to the name specified in the configuration file.
+- `quorum`: The quorum index (e.g., `0`, `1`).
+- `status`: The status of the onchain batches. Currently, the only supported status is `missed`. If EigenDA developers add more events to the EigenDA contracts, the exporter will be able to report additional statuses. A `signed` status cannot be used because the emitted event does not contain the signers' public keys.
+
 ## Installation
 
 There are two options for installing the EigenLayer AVS OnChain Exporter:
