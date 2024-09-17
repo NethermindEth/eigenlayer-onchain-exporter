@@ -3,7 +3,7 @@ package avsexporter
 import (
 	"context"
 
-	"github.com/NethermindEth/eigenda-blob-scrapper/internal/config"
+	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/config"
 )
 
 type AVSExporter interface {

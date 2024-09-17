@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/NethermindEth/eigenda-blob-scrapper/internal/avs/eigenda/contracts"
+	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/avs/eigenda/contracts"
 )
 
 type confirmBatchInput struct {

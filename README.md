@@ -27,7 +27,7 @@ There are two options for installing the EigenLayer AVS OnChain Exporter:
 2. Clone the repository:
 
    ```shell
-   git clone https://github.com/NethermindEth/eigenda-blob-scrapper.git
+   git clone https://github.com/NethermindEth/eigenlayer-onchain-exporter.git
    cd eigenda-blob-scrapper
    ```
 
@@ -52,7 +52,7 @@ There are two options for installing the EigenLayer AVS OnChain Exporter:
 2. Clone the repository:
 
    ```shell
-   git clone https://github.com/NethermindEth/eigenda-blob-scrapper.git
+   git clone https://github.com/NethermindEth/eigenlayer-onchain-exporter.git
    cd eigenda-blob-scrapper
    ```
 

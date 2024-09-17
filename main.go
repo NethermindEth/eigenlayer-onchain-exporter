@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/NethermindEth/eigenda-blob-scrapper/cmd"
+	"github.com/NethermindEth/eigenlayer-onchain-exporter/cmd"
 )
 
 func main() {

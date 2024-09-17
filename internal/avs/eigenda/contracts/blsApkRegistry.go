@@ -5,7 +5,7 @@ import (
 	_ "embed"
 	"fmt"
 
-	"github.com/NethermindEth/eigenda-blob-scrapper/internal/config"
+	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/config"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )

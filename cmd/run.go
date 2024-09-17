@@ -7,9 +7,9 @@ import (
 	"os"
 	"sync"
 
-	"github.com/NethermindEth/eigenda-blob-scrapper/internal/avs/eigenda"
-	"github.com/NethermindEth/eigenda-blob-scrapper/internal/config"
-	"github.com/NethermindEth/eigenda-blob-scrapper/internal/prometheus"
+	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/prometheus"
+	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/avs/eigenda"
+	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/config"
 	"github.com/spf13/cobra"
 )
 
