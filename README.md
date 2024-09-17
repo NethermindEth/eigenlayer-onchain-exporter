@@ -35,13 +35,13 @@ There are two options for installing the EigenLayer AVS OnChain Exporter:
 
    ```shell
    git clone https://github.com/NethermindEth/eigenlayer-onchain-exporter.git
-   cd eigenda-blob-scrapper
+   cd eigenlayer-onchain-exporter
    ```
 
 3. Build the Docker image:
 
    ```shell
-   docker build -t eigenlayer-avs-exporter .
+   docker build -t eigenlayer-onchain-exporter .
    ```
 
 4. Run the container:
@@ -50,7 +50,7 @@ There are two options for installing the EigenLayer AVS OnChain Exporter:
    docker run \
       -p 8080:8080 \
       -v $(pwd)/config.yml:/config.yml \
-      eigenlayer-avs-exporter
+      eigenlayer-onchain-exporter
    ```
 
 ### Option 2: Building the Go Binary Directly
@@ -60,19 +60,19 @@ There are two options for installing the EigenLayer AVS OnChain Exporter:
 
    ```shell
    git clone https://github.com/NethermindEth/eigenlayer-onchain-exporter.git
-   cd eigenda-blob-scrapper
+   cd eigenlayer-onchain-exporter
    ```
 
 3. Build the binary:
 
    ```shell
-   go build -o eigenlayer-avs-exporter
+   go build -o eigenlayer-onchain-exporter
    ```
 
 4. Run the binary:
 
    ```shell
-   ./eigenlayer-avs-exporter --config config.yml run
+   ./eigenlayer-onchain-exporter --config config.yml run
    ```
 
 Choose the installation method that best suits your needs and environment.
