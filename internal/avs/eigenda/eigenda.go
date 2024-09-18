@@ -281,7 +281,7 @@ func (e *eigenDAOnChainExporter) processBatchConfirmedLog(log types.Log) error {
 				return fmt.Errorf("failed to get operator BLS public key: %v", err)
 			}
 			if operatorBLSPubkeyX.Cmp(pubkey.X) == 0 || operatorBLSPubkeyY.Cmp(pubkey.Y) == 0 {
-				metricOnchainBatches.WithLabelValues(operator.Name, "missed").Inc()
+				metricOnchainBatches.WithLabelValues(operator.Name, e.network, "missed").Inc()
 				slog.Info("operator failed to sign batch |", "avsEnv", e.avsEnv, "blockNumber", log.BlockNumber, "txIndex", log.TxIndex, "operator", operator.Name)
 			}
 		}
