@@ -1,5 +1,6 @@
 services:
   onchain-exporter:
+    container_name: eigenlayer-onchain-exporter
     build: .
     expose:
       - "9090"
@@ -8,6 +9,7 @@ services:
      - ./config.yml:/root/config.yml
 
   prometheus:
+    container_name: eoe-prometheus
     image: prom/prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
