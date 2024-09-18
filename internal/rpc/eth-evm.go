@@ -3,7 +3,6 @@ package rpc
 import (
 	"context"
 	"log/slog"
-	"sync"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -28,7 +27,6 @@ type EthEvmRpc interface {
 
 type ethEvmRpc struct {
 	network string
-	mutex   sync.Mutex
 	client  *ethclient.Client
 	retries int
 }
@@ -50,10 +48,6 @@ func NewEthEvmRpc(network string, url string, retries int) (EthEvmRpc, error) {
 }
 
 func (e *ethEvmRpc) BlockNumber(ctx context.Context) (uint64, error) {
-	// Manage lock
-	e.mutex.Lock()
-	defer e.mutex.Unlock()
-
 	// Init retries counter
 	retries := ctx.Value(retriesKey)
 	if retries == nil {
@@ -77,10 +71,6 @@ func (e *ethEvmRpc) BlockNumber(ctx context.Context) (uint64, error) {
 }
 
 func (e *ethEvmRpc) FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]types.Log, error) {
-	// Manage lock
-	e.mutex.Lock()
-	defer e.mutex.Unlock()
-
 	// Init retries counter
 	retries := ctx.Value(retriesKey)
 	if retries == nil {
@@ -103,10 +93,6 @@ func (e *ethEvmRpc) FilterLogs(ctx context.Context, query ethereum.FilterQuery) 
 }
 
 func (e *ethEvmRpc) TransactionByHash(ctx context.Context, hash common.Hash) (*types.Transaction, bool, error) {
-	// Manage lock
-	e.mutex.Lock()
-	defer e.mutex.Unlock()
-
 	// Init retries counter
 	retries := ctx.Value(retriesKey)
 	if retries == nil {
