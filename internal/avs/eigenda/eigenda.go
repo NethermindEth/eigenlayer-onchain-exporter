@@ -106,15 +106,18 @@ func (e *eigenDAOnChainExporter) Run(ctx context.Context, c *config.Config) erro
 				switch vLog.Topics[0].Hex() {
 				case serviceManagerContract.Abi.Events["BatchConfirmed"].ID.Hex():
 					if err := e.processBatchConfirmedLog(vLog); err != nil {
-						return fmt.Errorf("failed to process BatchConfirmed log: %v", err)
+						slog.Error("exporter error |", "avsEnv", e.avsEnv, "error", err)
+						continue
 					}
 				case blsApkRegistryContract.Abi.Events["OperatorRemovedFromQuorums"].ID.Hex():
 					if err := e.processOperatorRemovedFromQuorumsLog(vLog); err != nil {
-						return fmt.Errorf("failed to process OperatorRemovedFromQuorums log: %v", err)
+						slog.Error("exporter error |", "avsEnv", e.avsEnv, "error", err)
+						continue
 					}
 				case blsApkRegistryContract.Abi.Events["OperatorAddedToQuorums"].ID.Hex():
 					if err := e.processOperatorAddedToQuorumsLog(vLog); err != nil {
-						return fmt.Errorf("failed to process OperatorAddedToQuorums log: %v", err)
+						slog.Error("exporter error |", "avsEnv", e.avsEnv, "error", err)
+						continue
 					}
 				}
 			}
