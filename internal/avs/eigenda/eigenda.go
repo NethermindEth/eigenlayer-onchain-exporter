@@ -28,6 +28,9 @@ type eigenDAOnChainExporter struct {
 }
 
 func NewEigenDAOnChainExporter(avsEnv string, c *config.Config) (avsexporter.AVSExporter, error) {
+	// Set exporter status to DOWN by default
+	metricExporterStatus.WithLabelValues(avsEnv).Set(0)
+
 	// Filter operators by AVS environment
 	var operators []config.OperatorConfig
 	for _, operator := range c.Operators {
@@ -62,9 +65,6 @@ func (e *eigenDAOnChainExporter) Name() string {
 }
 
 func (e *eigenDAOnChainExporter) Run(ctx context.Context, c *config.Config) error {
-	// Set exporter status to DOWN by default
-	metricExporterStatus.WithLabelValues(e.avsEnv).Set(0)
-
 	// TODO: Add a configuration option for the ticker time
 	tickerTime := time.Second * 30
 	slog.Info("running exporter |", "avsEnv", e.avsEnv, "interval", tickerTime)
