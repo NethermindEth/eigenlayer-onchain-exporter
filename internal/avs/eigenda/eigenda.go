@@ -58,6 +58,9 @@ func NewEigenDAOnChainExporter(avsEnv string, c *config.Config) (avsexporter.AVS
 }
 
 func (e *eigenDAOnChainExporter) Run(ctx context.Context, c *config.Config) error {
+	// Set exporter status to DOWN by default
+	metricExporterStatus.WithLabelValues(e.avsEnv).Set(0)
+
 	// TODO: Add a configuration option for the ticker time
 	tickerTime := time.Second * 30
 	slog.Info("running exporter |", "avsEnv", e.avsEnv, "interval", tickerTime)
@@ -78,6 +81,9 @@ func (e *eigenDAOnChainExporter) Run(ctx context.Context, c *config.Config) erro
 	if err != nil {
 		return err
 	}
+
+	// Set exporter status to UP
+	metricExporterStatus.WithLabelValues(e.avsEnv).Set(1)
 
 	ticker := time.Tick(tickerTime)
 	for {

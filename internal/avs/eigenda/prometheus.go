@@ -26,4 +26,9 @@ var (
 		Name:      "eigenda_onchain_quorum_status",
 		Help:      "Quorum status of eigenda onchain",
 	}, []string{"operator", "network", "quorum"})
+	metricExporterStatus = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: "eoe",
+		Name:      "eigenda_exporter_up",
+		Help:      "Status of the exporter",
+	}, []string{"avsEnv"})
 )
