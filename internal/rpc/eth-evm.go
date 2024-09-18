@@ -3,7 +3,9 @@ package rpc
 import (
 	"context"
 	"log/slog"
+	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -14,10 +16,6 @@ var (
 	ethEvmRpcs = make(map[string]EthEvmRpc)
 )
 
-const retriesKey = contextKey("retries")
-
-type contextKey string
-
 // EthEvmRpc is the interface for the Ethereum RPC client.
 type EthEvmRpc interface {
 	BlockNumber(ctx context.Context) (uint64, error)
@@ -26,12 +24,12 @@ type EthEvmRpc interface {
 }
 
 type ethEvmRpc struct {
-	network string
-	client  *ethclient.Client
-	retries int
+	network        string
+	client         *ethclient.Client
+	maxElapsedTime time.Duration
 }
 
-func NewEthEvmRpc(network string, url string, retries int) (EthEvmRpc, error) {
+func NewEthEvmRpc(network string, url string, maxElapsedTime time.Duration) (EthEvmRpc, error) {
 	if _, ok := ethEvmRpcs[network]; ok {
 		return ethEvmRpcs[network], nil
 	}
@@ -41,76 +39,62 @@ func NewEthEvmRpc(network string, url string, retries int) (EthEvmRpc, error) {
 		return nil, err
 	}
 
-	ethEvmRpc := &ethEvmRpc{network: network, client: client, retries: retries}
+	ethEvmRpc := &ethEvmRpc{network: network, client: client, maxElapsedTime: maxElapsedTime}
 	ethEvmRpcs[network] = ethEvmRpc
 
 	return ethEvmRpc, nil
 }
 
 func (e *ethEvmRpc) BlockNumber(ctx context.Context) (uint64, error) {
-	// Init retries counter
-	retries := ctx.Value(retriesKey)
-	if retries == nil {
-		ctx = context.WithValue(ctx, retriesKey, e.retries)
-		retries = e.retries
+	operation := func() (uint64, error) {
+		slog.Debug("getting block number |", "rpcNetwork", e.network)
+		return e.client.BlockNumber(ctx)
+	}
+	notify := func(err error, duration time.Duration) {
+		slog.Error("failed to get block number, retrying... |", "rpc-network", e.network, "duration", duration, "error", err)
 	}
 
-	slog.Debug("getting block number |", "rpcNetwork", e.network)
-	blockNumber, err := e.client.BlockNumber(ctx)
-	if err != nil {
-		if retries.(int) > 0 {
-			slog.Error("failed to get block number, retrying...", "rpc-network", e.network, "error", err)
-			ctx = context.WithValue(ctx, retriesKey, retries.(int)-1)
-			return e.BlockNumber(ctx)
-		}
-		slog.Error("failed to get block number", "rpc-network", e.network, "error", err)
-		return 0, err
-	}
-
-	return blockNumber, nil
+	return backoff.RetryNotifyWithData(
+		operation,
+		backoff.NewExponentialBackOff(backoff.WithMaxElapsedTime(e.maxElapsedTime)),
+		notify,
+	)
 }
 
 func (e *ethEvmRpc) FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]types.Log, error) {
-	// Init retries counter
-	retries := ctx.Value(retriesKey)
-	if retries == nil {
-		ctx = context.WithValue(ctx, retriesKey, e.retries)
-		retries = e.retries
+	operation := func() ([]types.Log, error) {
+		slog.Debug("filtering logs |", "rpc-network", e.network)
+		return e.client.FilterLogs(ctx, query)
+	}
+	notify := func(err error, duration time.Duration) {
+		slog.Error("failed to filter logs, retrying... |", "rpc-network", e.network, "duration", duration, "error", err)
 	}
 
-	logs, err := e.client.FilterLogs(ctx, query)
-	if err != nil {
-		if retries.(int) > 0 {
-			slog.Error("failed to filter logs, retrying... |", "rpc-network", e.network, "error", err)
-			ctx = context.WithValue(ctx, retriesKey, retries.(int)-1)
-			return e.FilterLogs(ctx, query)
-		}
-		slog.Error("failed to filter logs |", "rpc-network", e.network, "error", err)
-		return nil, err
-	}
-
-	return logs, nil
+	return backoff.RetryNotifyWithData(
+		operation,
+		backoff.NewExponentialBackOff(backoff.WithMaxElapsedTime(e.maxElapsedTime)),
+		notify,
+	)
 }
 
 func (e *ethEvmRpc) TransactionByHash(ctx context.Context, hash common.Hash) (*types.Transaction, bool, error) {
-	// Init retries counter
-	retries := ctx.Value(retriesKey)
-	if retries == nil {
-		ctx = context.WithValue(ctx, retriesKey, e.retries)
-		retries = e.retries
+	type result struct {
+		tx        *types.Transaction
+		isPending bool
+	}
+	operation := func() (result, error) {
+		slog.Debug("getting transaction by hash |", "rpc-network", e.network, "hash", hash)
+		tx, isPending, err := e.client.TransactionByHash(ctx, hash)
+		return result{tx: tx, isPending: isPending}, err
+	}
+	notify := func(err error, duration time.Duration) {
+		slog.Error("failed to get transaction by hash, retrying... |", "rpc-network", e.network, "error", err)
 	}
 
-	slog.Debug("getting transaction by hash |", "rpc-network", e.network, "hash", hash)
-	tx, isPending, err := e.client.TransactionByHash(ctx, hash)
-	if err != nil {
-		if retries.(int) > 0 {
-			slog.Error("failed to get transaction by hash, retrying... |", "rpc-network", e.network, "error", err)
-			ctx = context.WithValue(ctx, retriesKey, retries.(int)-1)
-			return e.TransactionByHash(ctx, hash)
-		}
-		slog.Error("failed to get transaction by hash |", "rpc-network", e.network, "error", err)
-		return nil, false, err
-	}
-
-	return tx, isPending, nil
+	out, err := backoff.RetryNotifyWithData(
+		operation,
+		backoff.NewExponentialBackOff(backoff.WithMaxElapsedTime(e.maxElapsedTime)),
+		notify,
+	)
+	return out.tx, out.isPending, err
 }
