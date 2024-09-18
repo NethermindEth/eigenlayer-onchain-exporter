@@ -5,13 +5,20 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"os/signal"
 	"sync"
 
 	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/avs/eigenda"
+	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/avsexporter"
 	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/config"
 	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/prometheus"
 	"github.com/spf13/cobra"
 )
+
+type exporterError struct {
+	exporter avsexporter.AVSExporter
+	err      error
+}
 
 func runCommand() *cobra.Command {
 	var c *config.Config
@@ -37,10 +44,10 @@ func runCommand() *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
-				wg          sync.WaitGroup
-				ctx, cancel = context.WithCancel(cmd.Context())
-				avsEnvs     = make(map[string]bool)
-				errChan     = make(chan error, len(avsEnvs))
+				wg              sync.WaitGroup
+				ctx, cancel     = context.WithCancel(cmd.Context())
+				avsEnvs         = make(map[string]bool)
+				exporterErrorCh = make(chan exporterError, len(avsEnvs))
 			)
 			// Add all AVS environments from operators
 			for _, operator := range c.Operators {
@@ -55,39 +62,58 @@ func runCommand() *cobra.Command {
 					// Initialize and run the AVS environment exporter
 					exporter, err := eigenda.NewEigenDAOnChainExporter(env, c)
 					if err != nil {
-						slog.Error(err.Error())
-						cancel()
-						wg.Wait()
+						gracefulExit(cancel, &wg)
 						return err
 					}
-					wg.Add(1)
-					go func() {
-						defer wg.Done()
-						errChan <- exporter.Run(ctx, c)
-					}()
+					runExporter(ctx, exporter, &wg, exporterErrorCh, c)
 				default:
-					gracefulExit(cancel, &wg, fmt.Errorf("invalid AVS environment: %s", env))
+					gracefulExit(cancel, &wg)
+					return fmt.Errorf("invalid AVS environment: %s", env)
 				}
 			}
 			// Wait for all exporters to finish
+			signals := make(chan os.Signal, 1)
+			signal.Notify(signals, os.Interrupt)
 			for {
 				select {
-				case err := <-errChan:
-					gracefulExit(cancel, &wg, err)
-				case <-ctx.Done():
-					gracefulExit(cancel, &wg, nil)
+				case exporterError := <-exporterErrorCh:
+					runExporter(ctx, exporterError.exporter, &wg, exporterErrorCh, c)
+				case <-signals:
+					gracefulExit(cancel, &wg)
+					return nil
 				}
 			}
 		},
 	}
 }
 
-func gracefulExit(cancel context.CancelFunc, wg *sync.WaitGroup, err error) {
-	slog.Debug("Graceful exit")
+// runExporter starts an exporter and adds it to the wait group. It also sends
+// any errors to the exporterErrorCh channel.
+func runExporter(
+	ctx context.Context,
+	exporter avsexporter.AVSExporter,
+	wg *sync.WaitGroup,
+	exporterErrorCh chan<- exporterError,
+	c *config.Config,
+) {
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err := exporter.Run(ctx, c)
+		if err != nil {
+			if ctx.Err() != nil {
+				slog.Info("exporter context done", "exporter", exporter.Name())
+			} else {
+				slog.Error("exporter error", "exporter", exporter.Name(), "error", err)
+				exporterErrorCh <- exporterError{exporter, err}
+			}
+		}
+	}()
+}
+
+func gracefulExit(cancel context.CancelFunc, wg *sync.WaitGroup) {
+	slog.Debug("Shutting down exporters...")
 	cancel()
 	wg.Wait()
-	if err != nil {
-		slog.Error(err.Error())
-	}
-	os.Exit(1)
+	slog.Debug("Exporters shutdown complete")
 }

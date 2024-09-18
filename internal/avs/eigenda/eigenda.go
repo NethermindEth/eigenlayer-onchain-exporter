@@ -57,6 +57,10 @@ func NewEigenDAOnChainExporter(avsEnv string, c *config.Config) (avsexporter.AVS
 	return e, nil
 }
 
+func (e *eigenDAOnChainExporter) Name() string {
+	return e.avsEnv
+}
+
 func (e *eigenDAOnChainExporter) Run(ctx context.Context, c *config.Config) error {
 	// Set exporter status to DOWN by default
 	metricExporterStatus.WithLabelValues(e.avsEnv).Set(0)

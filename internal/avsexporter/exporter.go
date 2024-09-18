@@ -7,5 +7,6 @@ import (
 )
 
 type AVSExporter interface {
+	Name() string
 	Run(context.Context, *config.Config) error
 }
