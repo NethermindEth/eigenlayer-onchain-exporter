@@ -1,9 +1,5 @@
 package config
 
-import (
-	"log/slog"
-)
-
 const (
 	// RPCNetwork is the network type for the RPC.
 	RPCNetworkEthereum = "ethereum"
@@ -17,23 +13,23 @@ const (
 // Config is the configuration for the application.
 type Config struct {
 	// Operators is the list of operators to be tracked.
-	Operators []OperatorConfig  `yaml:"operators"`
+	Operators []OperatorConfig `yaml:"operators"`
 	// RPCs is the list of RPCs to be used for the AVS exporters.
-	RPCs      map[string]string `yaml:"rpcs"`
+	RPCs map[string]string `yaml:"rpcs"`
 	// LogLevel is the level of logging to be used.
-	LogLevel  slog.Level        `yaml:"logLevel"`
+	LogLevel string `yaml:"logLevel"`
 }
 
 // OperatorConfig holds the needed information for an operator to be tracked.
 type OperatorConfig struct {
 	// Name is the name of the operator.
-	Name          string        `yaml:"name"`
+	Name string `yaml:"name"`
 	// Address is the address of the operator.
-	Address       string        `yaml:"address"`
+	Address string `yaml:"address"`
 	// BLSPublicKey is the BLS public key of the operator.
-	BLSPublicKey  [2]string     `yaml:"blsPublicKey"`
+	BLSPublicKey [2]string `yaml:"blsPublicKey"`
 	// AVSEnvs is the list of AVS environments to be tracked.
-	AVSEnvs       []string      `yaml:"avsEnvs"`
+	AVSEnvs []string `yaml:"avsEnvs"`
 	// EigenDAConfig is the configuration for the EigenDA AVS.
 	EigenDAConfig EigenDAConfig `yaml:"eigenDAConfig"`
 }

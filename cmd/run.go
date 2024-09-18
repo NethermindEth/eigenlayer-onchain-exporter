@@ -7,9 +7,9 @@ import (
 	"os"
 	"sync"
 
-	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/prometheus"
 	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/avs/eigenda"
 	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/config"
+	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/prometheus"
 	"github.com/spf13/cobra"
 )
 
@@ -27,6 +27,11 @@ func runCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			logLevel := slog.Level(slog.LevelInfo)
+			if err := logLevel.UnmarshalText([]byte(c.LogLevel)); err != nil {
+				return err
+			}
+			slog.SetLogLoggerLevel(logLevel)
 			go prometheus.StartPrometheusServer(":9090")
 			return nil
 		},
