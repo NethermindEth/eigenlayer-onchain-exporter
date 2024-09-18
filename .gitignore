@@ -48,5 +48,5 @@ debug
 # Project-specific ignore patterns (if any)
 # Add any other patterns specific to your project here
 
-config.yml
+eoe-config.yml
 bin/
