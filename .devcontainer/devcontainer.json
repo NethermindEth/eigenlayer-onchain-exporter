@@ -8,7 +8,8 @@
 		"ghcr.io/devcontainers/features/go:1": {
 			"version": "1.23.1"
 		},
-		"ghcr.io/devcontainers/features/github-cli:1": {}
+		"ghcr.io/devcontainers/features/github-cli:1": {},
+		"ghcr.io/gvatsal60/dev-container-features/pre-commit:1": {}
 	},
 	// 👇 Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
@@ -19,7 +20,9 @@
 		"vscode": {
 			"extensions": [
 				"golang.go",
-				"Gruntfuggly.todo-tree"
+				"Gruntfuggly.todo-tree",
+				"streetsidesoftware.code-spell-checker",
+				"DavidAnson.vscode-markdownlint"
 			]
 		}
 	}

@@ -9,3 +9,6 @@ build:
 
 build-docker:
 	docker build -t eoe .
+
+pre-commit:
+	pre-commit run --all-files

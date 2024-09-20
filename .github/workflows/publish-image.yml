@@ -6,7 +6,7 @@ env:
   REPO_DEV: angkor-oci-local-dev
   REPO_STAGING: angkor-oci-local-staging
   REPO_PROD: angkor-oci-local-prod
-  IMAGE_NAME: eigenlater-onchain-exporter
+  IMAGE_NAME: eigenlayer-onchain-exporter
 
 
 on:
