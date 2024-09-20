@@ -39,7 +39,12 @@ func runCommand() *cobra.Command {
 				return err
 			}
 			slog.SetLogLoggerLevel(logLevel)
-			go prometheus.StartPrometheusServer(":9090")
+			go func() {
+				err := prometheus.StartPrometheusServer(":9090")
+				if err != nil {
+					slog.Error("Error starting Prometheus server", "error", err)
+				}
+			}()
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
