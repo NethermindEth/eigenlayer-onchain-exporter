@@ -14,8 +14,9 @@ For EigenDA, Holeksy and Mainnet are supported and exposes the following metrics
 - `eoe_eigenda_onchain_batches_total{network="<network>"}`: Total number of onchain batches that the EigenDA exporter of the specific network has processed. This is a counter that increments with each block and resets to 0 if the exporter is restarted.
 - `eoe_eigenda_onchain_batches{operator="<operator>", network="<network>", status="<status>"}`: Number of onchain batches missed by an operator in the specific network. For now the only status is `missed`.
 - `eoe_eigenda_onchain_quorum_status{operator="<operator>", network="<network>", quorum="<quorum>"}`: The status of the operator in the specific network and quorum. The value could be 1 if the operator is in quorum, 0 if the operator is not in quorum.
+- `eoe_eigenda_exporter_up{avsEnv="<avsEnv>"}`: The status of the exporter. The value could be 1 if the exporter is running, 0 if the exporter is not running.
 
-> Due this exporter could be tracking operators that are already running before the exporter is deployed, the `eoe_eigenda_onchain_quorum_status` initial value could be configured by setting the `operators[i].eigenDAConfig.quorums[j]` to `true` if the operator is in quorum at exporter start.
+> If the exporter might track operators already running before it's deployed, set the `eoe_eigenda_onchain_quorum_status` initial value by configuring `operators[i].eigenDAConfig.quorums[j]` to `true` when the operator is in quorum at the exporter's start.
 
 ##### Labels
 
