@@ -6,7 +6,7 @@ services:
       - "9090"
     restart: unless-stopped
     volumes:
-     - ./config.yml:/root/config.yml
+     - ./eoe-config.yml:/root/eoe-config.yml
 
   prometheus:
     container_name: eoe-prometheus
