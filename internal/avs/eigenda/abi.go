@@ -10,7 +10,9 @@ import (
 )
 
 type confirmBatchInput struct {
-	// TODO: add input 0
+	/* The confirmBatch input also has a 0th input which is not used. A new
+	type could be created and added here if it becomes necessary.*/
+
 	NonSignerStakesAndSignature nonSignerStakesAndSignature // input 1
 }
 
