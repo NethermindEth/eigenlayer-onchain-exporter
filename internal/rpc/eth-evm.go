@@ -5,9 +5,10 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/common"
 	"github.com/cenkalti/backoff/v4"
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/common"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
@@ -20,7 +21,7 @@ var (
 type EthEvmRpc interface {
 	BlockNumber(ctx context.Context) (uint64, error)
 	FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]types.Log, error)
-	TransactionByHash(ctx context.Context, hash common.Hash) (*types.Transaction, bool, error)
+	TransactionByHash(ctx context.Context, hash ethcommon.Hash) (*types.Transaction, bool, error)
 }
 
 type ethEvmRpc struct {
@@ -35,6 +36,16 @@ func NewEthEvmRpc(network string, url string, maxElapsedTime time.Duration) (Eth
 	}
 	slog.Debug("initializing new eth-evm rpc |", "network", network)
 	client, err := ethclient.Dial(url)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check the chain ID of the network
+	chainId, err := client.ChainID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	err = common.AssertChainID(network, chainId)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +88,7 @@ func (e *ethEvmRpc) FilterLogs(ctx context.Context, query ethereum.FilterQuery) 
 	)
 }
 
-func (e *ethEvmRpc) TransactionByHash(ctx context.Context, hash common.Hash) (*types.Transaction, bool, error) {
+func (e *ethEvmRpc) TransactionByHash(ctx context.Context, hash ethcommon.Hash) (*types.Transaction, bool, error) {
 	type result struct {
 		tx        *types.Transaction
 		isPending bool
