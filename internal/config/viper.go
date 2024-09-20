@@ -18,7 +18,7 @@ func GetConfig(configPath string) (*Config, error) {
 
 	// Set the environment prefix and automatically use environment variables.
 	// TODO: Overwriting the config file with environment variables is not working
-	// as expected. We need to redifine the Config struct to make easier bindings
+	// as expected. We need to redefine the Config struct to make easier bindings
 	// with environment variables.
 	viper.SetEnvPrefix("EOE")
 	viper.AutomaticEnv()
