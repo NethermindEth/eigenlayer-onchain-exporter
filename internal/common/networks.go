@@ -17,7 +17,7 @@ func AssertChainID(network string, chainId *big.Int) error {
 			return fmt.Errorf("invalid chain id for network: %s", network)
 		}
 	case NetworkMainnet:
-		if chainId.Cmp(big.NewInt(2)) != 0 {
+		if chainId.Cmp(big.NewInt(1)) != 0 {
 			return fmt.Errorf("invalid chain id for network: %s", network)
 		}
 	default:
