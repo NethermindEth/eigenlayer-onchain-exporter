@@ -93,8 +93,8 @@ func (e *eigenDAOnChainExporter) Run(ctx context.Context, c *config.Config) erro
 	for {
 		select {
 		case <-ctx.Done():
-			slog.Info("exporter context done |", "avsEnv", e.avsEnv)
-			return ctx.Err()
+			slog.Info("exiting exporter |", "avsEnv", e.avsEnv)
+			return nil
 		case <-ticker:
 			// Get the next block range
 			fromBlock, toBlock, err := e.nextBlockRange(latestBlock, tickerTime)

@@ -1,11 +1,9 @@
-package cmd
+package cli
 
 import (
 	"context"
 	"fmt"
 	"log/slog"
-	"os"
-	"os/signal"
 	"sync"
 
 	"github.com/NethermindEth/eigenlayer-onchain-exporter/internal/avs/eigenda"
@@ -50,16 +48,18 @@ func runCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				wg              sync.WaitGroup
-				ctx, cancel     = context.WithCancel(cmd.Context())
+				ctx             = cmd.Context()
 				avsEnvs         = make(map[string]bool)
 				exporterErrorCh = make(chan exporterError, len(avsEnvs))
 			)
+
 			// Add all AVS environments from operators
 			for _, operator := range c.Operators {
 				for _, env := range operator.AVSEnvs {
 					avsEnvs[env] = true
 				}
 			}
+
 			// Run exporters for each AVS environment
 			for env := range avsEnvs {
 				switch env {
@@ -67,25 +67,22 @@ func runCommand() *cobra.Command {
 					// Initialize and run the AVS environment exporter
 					exporter, err := eigenda.NewEigenDAOnChainExporter(env, c)
 					if err != nil {
-						gracefulExit(cancel, &wg)
 						return err
 					}
 					runExporter(ctx, exporter, &wg, exporterErrorCh, c)
 				default:
-					gracefulExit(cancel, &wg)
 					return fmt.Errorf("invalid AVS environment: %s", env)
 				}
 			}
-			// Wait for all exporters to finish
-			signals := make(chan os.Signal, 1)
-			signal.Notify(signals, os.Interrupt)
+
 			for {
 				select {
 				case exporterError := <-exporterErrorCh:
+					slog.Debug("exporter error", "exporter", exporterError.exporter.Name(), "error", exporterError.err)
 					runExporter(ctx, exporterError.exporter, &wg, exporterErrorCh, c)
-				case <-signals:
-					gracefulExit(cancel, &wg)
-					return nil
+				case <-ctx.Done():
+					slog.Debug("context done", "error", ctx.Err())
+					return gracefulExit(&wg, nil)
 				}
 			}
 		},
@@ -106,9 +103,7 @@ func runExporter(
 		defer wg.Done()
 		err := exporter.Run(ctx, c)
 		if err != nil {
-			if ctx.Err() != nil {
-				slog.Info("exporter context done", "exporter", exporter.Name())
-			} else {
+			if ctx.Err() == nil {
 				slog.Error("exporter error", "exporter", exporter.Name(), "error", err)
 				exporterErrorCh <- exporterError{exporter, err}
 			}
@@ -116,9 +111,9 @@ func runExporter(
 	}()
 }
 
-func gracefulExit(cancel context.CancelFunc, wg *sync.WaitGroup) {
+func gracefulExit(wg *sync.WaitGroup, err error) error {
 	slog.Debug("Shutting down exporters...")
-	cancel()
 	wg.Wait()
 	slog.Debug("Exporters shutdown complete")
+	return err
 }
