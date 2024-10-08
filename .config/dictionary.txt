@@ -21,4 +21,5 @@ promauto
 promhttp
 Pubkeys
 Rpcs
+stretchr
 twinstake
