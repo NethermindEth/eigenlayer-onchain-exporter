@@ -1,21 +1,28 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9-slim
 
-# Set the working directory in the container
-WORKDIR /usr/src/app
+# Build stage
+FROM golang:1.23-alpine AS builder
 
-# Copy the current directory contents into the container at /usr/src/app
+WORKDIR /app
+
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+
+# Download all dependencies
+RUN go mod download
+
+# Copy the source code
 COPY . .
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -o eoe cmd/eoe/main.go
 
-# Make port 9600 available to the world outside this container
-EXPOSE 9600 
+# Final stage
+FROM alpine:latest
 
-# Define environment variable
-ENV FETCH_INTERVAL=60
-ENV API_URL=https://blobs-goerli.eigenda.xyz/api/trpc/blobs.getBlobs
+WORKDIR /root/
 
-# Run main.py when the container launches
-CMD ["python", "./main.py"]
+# Copy the binary from builder
+COPY --from=builder /app/eoe .
+
+# Command to run the executable
+CMD ["./eoe", "run"]

@@ -1,20 +1,20 @@
-version: '3'
-
 services:
-  scraper:
+  onchain-exporter:
+    container_name: eigenlayer-onchain-exporter
     build: .
-    ports:
-      - "9600:9600"
+    expose:
+      - "9090"
     restart: unless-stopped
-    environment:
-      - FETCH_INTERVAL=60
+    volumes:
+     - ./eoe-config.yml:/root/eoe-config.yml
 
   prometheus:
+    container_name: eoe-prometheus
     image: prom/prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
     depends_on:
-      - scraper
+      - onchain-exporter
     restart: unless-stopped

@@ -1,0 +1,56 @@
+name: CI/CD pipeline
+
+env:
+  DOCKER_REGISTRY: nethermind.jfrog.io
+
+  REPO_DEV: angkor-oci-local-dev
+  REPO_STAGING: angkor-oci-local-staging
+  REPO_PROD: angkor-oci-local-prod
+  IMAGE_NAME: eigenlayer-onchain-exporter
+
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  build_docker_image:
+    runs-on: ubuntu-latest
+    outputs:
+      DOCKER_IMAGE_NAME: ${{ env.IMAGE_NAME }}
+      DOCKER_IMAGE_TAG: ${{ steps.set_tag.outputs.DOCKER_IMAGE_TAG }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Define image tag
+        id: set_tag
+        run: |
+          export DOCKER_IMAGE_TAG=$(git describe --tags)
+          # This one is to be able to use the image tag in the next steps in this job
+          echo "DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
+          # This one is to be able to use the image tag in the next jobs
+          echo "DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to registry
+        run: |
+          docker login ${{ env.DOCKER_REGISTRY }} -u ${{ secrets.ARTIFACTORY_ANGKOR_USERNAME }} -p ${{ secrets.ARTIFACTORY_ANGKOR_TOKEN_CONTRIBUTOR }}
+      - name: Build and Push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: "linux/amd64"
+          push: true
+          tags: |
+            ${{ env.DOCKER_REGISTRY }}/${{ env.REPO_DEV }}/${{ env.IMAGE_NAME }}:latest

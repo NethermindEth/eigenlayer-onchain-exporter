@@ -1,0 +1,25 @@
+version: "0.2"
+ignorePaths:
+  - .devcontainer
+  - .vscode
+  - internal/avs/eigenda/contracts/abi
+  - go.sum
+  - go.mod
+dictionaryDefinitions:
+  - name: words
+    path: .config/dictionary.txt
+    addWords: true
+dictionaries:
+  - en_US
+  - bash
+  - words
+  - softwareTerms
+  - misc
+words: []
+ignoreWords: []
+import: []
+enableFiletypes:
+  - go
+  - yaml
+  - yml
+  - md

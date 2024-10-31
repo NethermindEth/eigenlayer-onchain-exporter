@@ -1,62 +1,137 @@
-# eigenda-blob-scraper
+# EigenLayer AVS OnChain Exporter
 
-A Python application that scrapes the Eigenda website for the latest blob data and exposes it via Prometheus metrics.
+EigenLayer AVS OnChain Exporter (EOE) is a tool designed to export on-chain data from various Actively Validator Set (AVS) services within the EigenLayer ecosystem as Prometheus metrics.
 
-## Project Description
+## Features
 
-The application gets the blob data in a json form from an EigenDA public endpoint and transforms it into Prometheus metrics every `FETCH_INTERVAL` seconds. The metrics are then exposed via a Prometheus server at port 9600.
+### Supported AVSs and Prometheus metrics
 
-The application is deployed via Docker image to DockerHub. The image can be found here: https://hub.docker.com/repository/docker/nethermind/eigenda-blob-scraper.
+#### EigenDA
 
-## Environment Variables
+For EigenDA, Holeksy and Mainnet are supported and exposes the following metrics:
 
-The application uses the following environment variables:
+- `eoe_eigenda_exporter_latest_block{network="<network>"}`: Latest block number that the EigenDA exporter of the specific network has processed.
+- `eoe_eigenda_onchain_batches_total{network="<network>"}`: Total number of onchain batches that the EigenDA exporter of the specific network has processed. This is a counter that increments with each block and resets to 0 if the exporter is restarted.
+- `eoe_eigenda_onchain_batches{operator="<operator>", network="<network>", status="<status>"}`: Number of onchain batches missed by an operator in the specific network. For now the only status is `missed`.
+- `eoe_eigenda_onchain_quorum_status{operator="<operator>", network="<network>", quorum="<quorum>"}`: The status of the operator in the specific network and quorum. The value could be 1 if the operator is in quorum, 0 if the operator is not in quorum.
+- `eoe_eigenda_exporter_up{avsEnv="<avsEnv>"}`: The status of the exporter. The value could be 1 if the exporter is running, 0 if the exporter is not running.
 
-| Variable | Description | Default Value |
-| --- | --- | --- |
-| API_URL | Endpoint to get the blob json data from | https://blobs-goerli.eigenda.xyz/api/trpc/blobs.getBlobs |
-| FETCH_INTERVAL | Fetch interval in seconds | 60 |
+> If the exporter might track operators already running before it's deployed, set the `eoe_eigenda_onchain_quorum_status` initial value by configuring `operators[i].eigenDAConfig.quorums[j]` to `true` when the operator is in quorum at the exporter's start.
 
-## Docker image
+##### Labels
 
-`nethermind/eigenda-blob-scraper:latest`
+- `network`: The network name (e.g., `holesky`, `mainnet`).
+- `operator`: The operator name (e.g., `nethermind`, `twinstake`). The operator name corresponds to the name specified in the configuration file.
+- `quorum`: The quorum index (e.g., `0`, `1`).
+- `status`: The status of the onchain batches. Currently, the only supported status is `missed`. If EigenDA developers add more events to the EigenDA contracts, the exporter will be able to report additional statuses. A `signed` status cannot be used because the emitted event does not contain the signers' public keys.
 
-## How to Run the Application
+## Installation
 
-### Docker
+There are two options for installing the EigenLayer AVS OnChain Exporter:
 
-The application can be run via Docker. The Docker image is available on DockerHub. To run the application, execute the following command:
+### Option 1: Building the Docker Image
 
-```bash
-docker run -p 9600:9600 nethermind/eigenda-blob-scraper:latest
+1. Ensure you have Docker installed on your system.
+2. Clone the repository:
+
+   ```shell
+   git clone https://github.com/NethermindEth/eigenlayer-onchain-exporter.git
+   cd eigenlayer-onchain-exporter
+   ```
+
+3. Build the Docker image:
+
+   ```shell
+   docker build -t eigenlayer-onchain-exporter .
+   ```
+
+4. Run the container:
+
+   ```shell
+   docker run \
+      -p 8080:8080 \
+      -v $(pwd)/config.yml:/config.yml \
+      eigenlayer-onchain-exporter
+   ```
+
+### Option 2: Building the Go Binary Directly
+
+1. Ensure you have Go 1.23 or later installed on your system.
+2. Clone the repository:
+
+   ```shell
+   git clone https://github.com/NethermindEth/eigenlayer-onchain-exporter.git
+   cd eigenlayer-onchain-exporter
+   ```
+
+3. Build the binary:
+
+   ```shell
+   go build -o eigenlayer-onchain-exporter
+   ```
+
+4. Run the binary:
+
+   ```shell
+   ./eigenlayer-onchain-exporter --config config.yml run
+   ```
+
+Choose the installation method that best suits your needs and environment.
+
+## Usage
+
+Run the `eoe --help` command to see all the command options.
+
+```shell
+$ ./bin/eoe --help
+EigenLayer On-chain Exporter (eoe) exposes Prometheus metrics about AVS protocols and EigenLayer's Node Operator.
+
+Usage:
+  eoe [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  help        Help about any command
+  run         Run the application
+
+Flags:
+  -c, --config string   path to config file (default "config.yml")
+  -h, --help            help for eoe
+
+Use "eoe [command] --help" for more information about a command.
 ```
 
-or alternatively, if you want to modify the env variables:
+## Configuration
 
-```bash
-docker run -p 9600:9600 -e API_URL=https://blobs-goerli.eigenda.xyz/api/trpc/blobs.getBlobs -e FETCH_INTERVAL=60 nethermind/eigenda-blob-scraper:latest
+The application uses a YAML configuration file. Here's an example of the `config.yml`:
+
+```yaml
+operators:
+  - name: nethermind
+    address: 0x57b6FdEF3A23B81547df68F44e5524b987755c99
+    blsPublicKey: ["8888183187486914528692107799849671390221086122063975348075796070706039667533", "1162660161480410110225128994312394399428655142287492115882227161635275660953"]
+    avsEnvs:
+      - eigenda-holesky
+    eigenDAConfig:
+      quorums:
+        - 0: false
+  - name: nethermind
+    address: 0x110af279aAFfB0d182697d7fC87653838AA5945e
+    blsPublicKey: ["2358328128321302874738169219641985530311496023056707902743599195833986584402", "20423525555617668586476030951095516580576618542850420469015501514067149320880"]
+    avsEnvs:
+      - eigenda-mainnet
+    eigenDAConfig:
+      quorums:
+        - 0: true
+rpcs:
+  - holesky: https://ethereum-holesky-rpc.publicnode.com
+  - mainnet: https://ethereum-rpc.publicnode.com
 ```
 
-### CLI
+## Structure Overview
 
-The application can also be run via the CLI. To run the application, execute the following command:
+![diagram](./img/eoe-diagram.png)
 
-```bash
-python3 main.py
-```
+## Contributing
 
-or alternatively, if you want to modify the env variables:
-
-```bash
-API_URL=https://blobs-goerli.eigenda.xyz/api/trpc/blobs.getBlobs FETCH_INTERVAL=60 python3 main.py
-```
-
-## How to Update the Code and Trigger CI/CD
-
-The repository uses GitHub Actions for Continuous Integration and Continuous Deployment. The workflow is defined in the `.github/workflows/publish-docker.yml` file. To update the code and trigger the CI/CD pipeline, follow these steps:
-
-1. Make your code changes locally.
-2. Commit and push the changes to the main branch.
-3. GitHub Actions will automatically build and push the docker image to DockerHub.
-
-The CI/CD pipeline is triggered on every push to the main branch, but can also be triggered manually by clicking on the "Actions" tab in the repository and selecting the "Publish Docker image" workflow. Then click on the "Run workflow" button.
+Contributions are welcome! Please feel free to submit a Pull Request.
