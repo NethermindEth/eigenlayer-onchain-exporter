@@ -45,7 +45,7 @@ jobs:
 
       - name: Login to registry
         run: |
-          docker login ${{ env.DOCKER_REGISTRY }} -u ${{ secrets.ARTIFACTORY_ANGKOR_USERNAME }} -p ${{ secrets.ARTIFACTORY_ANGKOR_TOKEN_CONTRIBUTOR }}
+          docker login ${{ env.DOCKER_REGISTRY }} -u ${{ secrets.ARTIFACTORY_ANGKOR_USERNAME }} -p ${{ secrets.ARTIFACTORY_ANGKOR_TOKEN_DEVELOPER }}
       - name: Build and Push
         uses: docker/build-push-action@v6
         with:
