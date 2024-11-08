@@ -53,4 +53,4 @@ jobs:
           platforms: "linux/amd64"
           push: true
           tags: |
-            ${{ env.DOCKER_REGISTRY }}/${{ env.REPO_DEV }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.DOCKER_REGISTRY }}/${{ env.REPO_PROD }}/${{ env.IMAGE_NAME }}:latest
