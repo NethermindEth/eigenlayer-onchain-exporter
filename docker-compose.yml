@@ -1,7 +1,7 @@
 services:
   onchain-exporter:
+    image: nethermindeth/eigenlayer-oe:v1.0.0
     container_name: eigenlayer-onchain-exporter
-    build: .
     expose:
       - "9090"
     restart: unless-stopped
