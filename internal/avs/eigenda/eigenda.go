@@ -56,6 +56,12 @@ func NewEigenDAOnChainExporter(avsEnv string, c *config.Config) (avsexporter.AVS
 	if err := e.init(c.RPCs); err != nil {
 		return nil, fmt.Errorf("failed to initialize exporter: %v", err)
 	}
+	// Initialize metricOnchainBatches metric to 0
+	for _, operator := range e.operators {
+		for _, status := range []string{"missed"} {
+			metricOnchainBatches.WithLabelValues(operator.Name, e.network, status).Add(0)
+		}
+	}
 	slog.Info("initialized exporter |", "avsEnv", e.avsEnv, "operators", len(e.operators))
 	return e, nil
 }
