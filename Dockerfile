@@ -19,10 +19,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o eoe cmd/eoe/main.go
 # Final stage
 FROM alpine:latest
 
-WORKDIR /root/
-
 # Copy the binary from builder
-COPY --from=builder /app/eoe .
+COPY --from=builder /app/eoe /usr/local/bin
 
 # Command to run the executable
-CMD ["./eoe", "run"]
+CMD ["eoe", "run"]
