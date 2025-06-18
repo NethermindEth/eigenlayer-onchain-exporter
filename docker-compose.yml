@@ -1,12 +1,14 @@
 services:
   onchain-exporter:
-    image: nethermindeth/eigenlayer-oe:v1.0.0
+    build:
+      context: .
     container_name: eigenlayer-onchain-exporter
     expose:
       - "9090"
     restart: unless-stopped
+    command: ["eoe", "run", "--config", "/app/eoe-config.yml"]
     volumes:
-     - ./eoe-config.yml:/root/eoe-config.yml
+     - ./eoe-config.yml:/app/eoe-config.yml
 
   prometheus:
     container_name: eoe-prometheus
