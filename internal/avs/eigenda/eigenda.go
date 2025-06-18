@@ -288,6 +288,7 @@ func (e *eigenDAOnChainExporter) processBatchConfirmedLog(log types.Log) error {
 
 	// Iterate over the not signers and check if they are operators as not signers
 	for _, operator := range e.operators {
+		signed := true
 		for _, pubkey := range input.NonSignerStakesAndSignature.NonSignerPubkeys {
 			operatorBLSPubkeyX, operatorBLSPubkeyY, err := getOperatorBLSPubkey(operator)
 			if err != nil {
@@ -296,7 +297,12 @@ func (e *eigenDAOnChainExporter) processBatchConfirmedLog(log types.Log) error {
 			if operatorBLSPubkeyX.Cmp(pubkey.X) == 0 || operatorBLSPubkeyY.Cmp(pubkey.Y) == 0 {
 				metricOnchainBatches.WithLabelValues(operator.Name, e.network, "missed").Inc()
 				slog.Info("operator failed to sign batch |", "avsEnv", e.avsEnv, "blockNumber", log.BlockNumber, "txIndex", log.TxIndex, "operator", operator.Name)
+				signed = false
 			}
+		}
+		if signed {
+			metricOnchainBatches.WithLabelValues(operator.Name, e.network, "signed").Inc()
+			slog.Info("operator signed batch |", "avsEnv", e.avsEnv, "blockNumber", log.BlockNumber, "txIndex", log.TxIndex, "operator", operator.Name)
 		}
 	}
 
